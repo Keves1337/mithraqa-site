@@ -12,6 +12,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MITHRA">
 <meta name="twitter:description" content="MITHRA QA/Audit. Audit everything. Coming soon.">
+<link rel="canonical" href="https://mithraqa.com/">
+<meta property="og:url" content="https://mithraqa.com/">
+<meta property="og:image" content="https://mithraqa.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://mithraqa.com/og.png">
+<noscript><style>.beat{opacity:1!important;transform:none!important}</style></noscript>
 <meta name="theme-color" content="#04070d">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
@@ -22,7 +29,7 @@
   * { box-sizing: border-box; }
   html { background: var(--bg); color: var(--ink); font-family: var(--font); scroll-behavior: smooth; }
   body { margin: 0; background: var(--bg); overflow-x: hidden; }
-  #gl { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; z-index: 0; }
+  #gl { position: fixed; inset: 0; width: 100%; height: 100%; height: 100lvh; display: block; z-index: 0; }
   #fallback { position: fixed; inset: 0; z-index: 0; display: none;
     background: radial-gradient(60% 50% at 50% 45%, rgba(46,230,245,.18), transparent 70%), var(--bg); }
   #fallback img { position: absolute; left: 50%; top: 42%; width: min(46vw, 320px); transform: translate(-50%, -50%); opacity: .7; }
@@ -53,7 +60,7 @@
   .cta:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
   .team { margin-top: 44px; display: flex; gap: 28px; justify-content: center; flex-wrap: wrap;
     font-size: 13px; letter-spacing: .35em; text-transform: uppercase; color: var(--dim); }
-  footer { position: relative; z-index: 1; padding: 28px 16px 36px; text-align: center; font-size: 12px; color: rgba(233,253,255,.4); }
+  footer { position: relative; z-index: 1; padding: 28px 16px 36px; text-align: center; font-size: 12px; color: rgba(233,253,255,.62); }
   .hint { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 2; font-size: 11px; letter-spacing: .4em;
     text-transform: uppercase; color: var(--dim); transition: opacity .5s; pointer-events: none; }
   .hint::after { content: ""; display: block; width: 1px; height: 34px; margin: 10px auto 0;
@@ -162,6 +169,9 @@ void main(){
   float fit = max(1.0, (u_res.y / u_res.x) * 0.72);   // portrait phones: fit width
   vec2 q = (uv - vec2(0.0, 0.19*rest)) * mix(2.2, 2.75, rest) * fit / zoom;
   vec3 col=vec3(0.015,0.03,0.05);
+  float logoFade=1.0-smoothstep(0.42,0.56,p);
+  // skip everything the tunnel fully covers (saves GPU on weak devices)
+  if(logoFade>0.0){
   col+=stars(uv,dive*6.0)*(1.0-smoothstep(0.45,0.6,p));
   // nebula
   float neb=fbm(uv*1.6+vec2(t*0.02,0.0)+dive*2.0);
@@ -178,7 +188,6 @@ void main(){
   float dEye=sdVesica(q.yx,0.587,0.377);
   float eyeIn=smoothstep(px,-px,dEye);
   float mark=max(smoothstep(px,-px,dRay),smoothstep(px,-px,dRing));
-  float logoFade=1.0-smoothstep(0.42,0.56,p);
   col=mix(col,brand(q),mark*logoFade);
   col=mix(col,vec3(0.02,0.06,0.09),eyeIn*logoFade*(1.0-smoothstep(0.3,0.5,p)));
   col=mix(col,brand(q),smoothstep(px,-px,abs(dEye)-0.022)*logoFade);
@@ -192,6 +201,7 @@ void main(){
   col=mix(col,vec3(0.01,0.03,0.05),smoothstep(px,-px,length(q)-0.048)*logoFade);
   // glow
   col+=vec3(0.18,0.9,0.96)*exp(-6.0*max(min(dRing,dRay),0.0))*0.25*logoFade;
+  }
 
   // phase 2 (0.45..1): through the pupil into the scanning tunnel
   float tun=smoothstep(0.45,0.62,p);
@@ -222,9 +232,12 @@ void main(){
 (function () {
   const canvas = document.getElementById("gl");
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const gl = canvas.getContext("webgl", { antialias: false, alpha: false, powerPreference: "high-performance" });
-  const fallback = () => { canvas.style.display = "none"; document.getElementById("fallback").style.display = "block"; };
+  const gl = canvas.getContext("webgl", { antialias: false, alpha: false, powerPreference: "default" });
+  let dead = false;
+  const fallback = () => { dead = true; canvas.style.display = "none"; document.getElementById("fallback").style.display = "block"; };
   if (!gl) return fallback();
+  // iOS / low-memory GPUs can drop the context: show the static logo instead.
+  canvas.addEventListener("webglcontextlost", e => { e.preventDefault(); fallback(); });
   const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
   let prog;
@@ -246,22 +259,34 @@ void main(){
   let mx = 0, my = 0;
   addEventListener("pointermove", e => { mx = e.clientX / innerWidth - 0.5; my = 0.5 - e.clientY / innerHeight; }, { passive: true });
 
-  // Render at a capped pixel ratio so phones and 4K screens stay smooth.
-  function resize() {
-    const dpr = Math.min(devicePixelRatio || 1, innerWidth < 700 ? 1.25 : 1.5);
-    canvas.width = Math.floor(innerWidth * dpr);
-    canvas.height = Math.floor(innerHeight * dpr);
+  // Render at a capped pixel ratio so phones and 4K screens stay smooth; the
+  // cap drops to 1x if frames run slow.
+  let dprCap = innerWidth < 700 ? 1.25 : 1.5, lastW = 0, lastH = 0;
+  function resize(force) {
+    const w = innerWidth, h = Math.max(innerHeight, lastH * (w === lastW ? 1 : 0));
+    // Ignore height-only changes from a collapsing mobile URL bar.
+    if (!force && w === lastW && Math.abs(innerHeight - lastH) < 160) return;
+    lastW = w; lastH = innerHeight;
+    const dpr = Math.min(devicePixelRatio || 1, dprCap);
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.uniform2f(uRes, canvas.width, canvas.height);
   }
-  addEventListener("resize", resize);
-  resize();
+  let resizeTimer = 0;
+  addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => resize(false), 150); });
+  resize(true);
 
   const t0 = performance.now();
+  let slow = 0, prev = t0;
   function frame(now) {
+    if (dead) return;
+    const dt = now - prev; prev = now;
+    if (dprCap > 1 && dt > 24 && dt < 200 && ++slow > 45) { dprCap = 1; resize(true); }
     progress += (target - progress) * (reduce ? 1 : 0.08);   // eased camera
     gl.uniform1f(uTime, reduce ? 0 : (now - t0) / 1000);
-    gl.uniform1f(uP, progress);
+    // Reduced motion: no zoom or tunnel flight, just the calm resting scene.
+    gl.uniform1f(uP, reduce ? 0 : progress);
     gl.uniform2f(uMouse, mx, my);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     requestAnimationFrame(frame);
