@@ -75,6 +75,7 @@
     background: linear-gradient(var(--gold), transparent); animation: drip 1.8s ease-in-out infinite; }
   @keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; }
     51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+  @media (max-height: 560px) { .hint { display: none; } }
   @media (prefers-reduced-motion: reduce) { .beat { transition: none; } .hint::after { animation: none; } html { scroll-behavior: auto; } }
 </style>
 </head>

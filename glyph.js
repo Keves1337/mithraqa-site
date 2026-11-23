@@ -241,8 +241,10 @@ void main(){
     if (!opts.noPointer) addEventListener("pointermove", e => { mx = e.clientX / innerWidth - 0.5; my = 0.5 - e.clientY / innerHeight; }, { passive: true });
 
     // ray marching is costly: cap resolution, drop further if frames run slow
-    let scale = opts.maxScale || Math.min(devicePixelRatio || 1, innerWidth < 700 ? 1.0 : 1.25);
+    const maxScale = opts.maxScale || Math.min(devicePixelRatio || 1, innerWidth < 700 ? 1.0 : 1.25);
+    let scale = maxScale;
     const minScale = 0.4;
+    let fast = 0;
     let lastW = 0, lastH = 0;
     function resize(force) {
       const w = canvas.clientWidth || canvas.width, h = canvas.clientHeight || canvas.height;
@@ -266,7 +268,10 @@ void main(){
       // smoothed frame time; ignore gaps from background tabs (> 1s)
       if (dt < 1000) avg += (dt - avg) * 0.1;
       if (avg > 28) slow++; else slow = 0;
-      if (scale > minScale && slow > 12) { scale = Math.max(minScale, scale * 0.75); slow = 0; avg = 16; resize(true); }
+      if (scale > minScale && slow > 12) { scale = Math.max(minScale, scale * 0.75); slow = 0; fast = 0; avg = 16; resize(true); }
+      // recover sharpness after ~3s of smooth frames (e.g. once a hidden tab is visible again)
+      if (avg < 20) fast++; else fast = 0;
+      if (scale < maxScale && fast > 180) { scale = Math.min(maxScale, scale / 0.75); fast = 0; resize(true); }
       const target = opts.getProgress ? opts.getProgress() : 0;
       eased += (target - eased) * (reduce ? 1 : 0.08);
       // reduced motion: draw a still frame and only redraw when something changes
