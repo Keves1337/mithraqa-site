@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MITHRA QA — Interactive Demo</title>
+<meta name="description" content="Try a simulated MITHRA QA scan. Sample data only; nothing is scanned.">
+<style>
+:root{--bg:#0b0f17;--panel:#121826;--line:#212b3f;--text:#e6ebf5;--mute:#8a96ad;--acc:#5b8cff;--crit:#ff4d6a;--high:#ff9a3c;--med:#f5d046;--low:#4ac0a0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.banner{position:sticky;top:0;z-index:5;background:#3a2a05;color:#ffd98a;border-bottom:1px solid #6b4d0e;padding:8px 16px;font-size:13px;text-align:center}
+.banner b{color:#fff}
+header{max-width:1000px;margin:0 auto;padding:28px 20px 8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-size:22px;margin:0;letter-spacing:.5px}
+h1 span{color:var(--acc)}
+.steps{display:flex;gap:8px;font-size:13px;color:var(--mute)}
+.steps div{padding:4px 10px;border:1px solid var(--line);border-radius:99px}
+.steps .on{color:#fff;border-color:var(--acc);background:#16213d}
+main{max-width:1000px;margin:0 auto;padding:12px 20px 60px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px}
+h2{margin:0 0 4px;font-size:18px}
+.sub{color:var(--mute);margin:0 0 16px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.opt{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#0f1522;cursor:pointer;text-align:left;color:inherit;font:inherit}
+.opt:hover:not(.locked){border-color:var(--acc)}
+.opt.sel{border-color:var(--acc);background:#16213d}
+.opt small{display:block;color:var(--mute);margin-top:2px}
+.opt.locked{opacity:.5;cursor:not-allowed}
+.tag{float:right;font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:0 6px}
+button.go{background:var(--acc);color:#fff;border:0;border-radius:9px;padding:11px 20px;font:inherit;font-weight:600;cursor:pointer}
+button.go:disabled{opacity:.4;cursor:not-allowed}
+button.ghost{background:none;color:var(--mute);border:1px solid var(--line);border-radius:9px;padding:10px 16px;font:inherit;cursor:pointer;margin-left:8px}
+input.url{width:100%;padding:11px 12px;border-radius:9px;border:1px solid var(--line);background:#0f1522;color:var(--mute);font:inherit}
+.bar{height:8px;background:#0f1522;border-radius:9px;overflow:hidden;margin:12px 0}
+.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .3s}
+pre.log{background:#070a11;border:1px solid var(--line);border-radius:10px;padding:12px;height:220px;overflow:auto;margin:0;font:12.5px/1.6 ui-monospace,Menlo,Consolas,monospace;color:#9fb0cf}
+.sev{display:inline-block;min-width:64px;text-align:center;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;color:#10131b}
+.s-Critical{background:var(--crit)}.s-High{background:var(--high)}.s-Medium{background:var(--med)}.s-Low{background:var(--low)}
+.score{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.score div{flex:1;min-width:110px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#0f1522}
+.score b{display:block;font-size:24px}
+.find{display:flex;gap:12px;align-items:center;width:100%;border:1px solid var(--line);background:#0f1522;color:inherit;border-radius:10px;padding:11px 14px;margin-bottom:8px;cursor:pointer;font:inherit;text-align:left}
+.find:hover,.find.sel{border-color:var(--acc)}
+.find span.t{flex:1}
+.detail{border-left:3px solid var(--acc);padding:4px 0 4px 14px;margin:6px 0 14px}
+.detail code{background:#070a11;border:1px solid var(--line);border-radius:6px;padding:2px 6px;font-size:13px}
+.sample{font-size:11px;color:#ffd98a;border:1px dashed #6b4d0e;border-radius:6px;padding:0 6px;margin-left:8px}
+.cta{text-align:center;color:var(--mute);font-size:14px}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="banner"><b>Simulated demo.</b> Everything here is sample data. No real scan runs, nothing is sent anywhere, and these results do not describe any real website.</div>
+<header>
+  <h1>MITHRA <span>QA</span> · Interactive demo</h1>
+  <div class="steps"><div id="st1" class="on">1 Target</div><div id="st2">2 Checks</div><div id="st3">3 Scan</div><div id="st4">4 Results</div></div>
+</header>
+<main>
+  <section class="card" id="p1">
+    <h2>Choose a sample target</h2>
+    <p class="sub">The full product scans sites you are authorized to test. In this demo you can only pick a built-in sample.</p>
+    <div class="grid" id="targets"></div>
+    <div style="margin-top:14px"><input class="url" disabled value="Your own URL — available in the full product"></div>
+    <div style="margin-top:16px"><button class="go" id="n1" disabled>Next</button></div>
+  </section>
+
+  <section class="card hide" id="p2">
+    <h2>Choose checks</h2>
+    <p class="sub">Pick one or more. Greyed-out checks are part of the full product only.</p>
+    <div class="grid" id="checks"></div>
+    <div style="margin-top:16px"><button class="go" id="n2" disabled>Run simulated scan</button><button class="ghost" data-back="p1">Back</button></div>
+  </section>
+
+  <section class="card hide" id="p3">
+    <h2>Scanning <span id="tname"></span><span class="sample">SIMULATED</span></h2>
+    <div class="bar"><i id="prog"></i></div>
+    <pre class="log" id="log"></pre>
+  </section>
+
+  <section class="card hide" id="p4">
+    <h2>Results <span class="sample">SAMPLE RESULTS — NOT REAL</span></h2>
+    <p class="sub" id="rsub"></p>
+    <div class="score" id="score"></div>
+    <div id="finds"></div>
+    <div style="margin-top:12px"><button class="go" id="again">Try another scan</button></div>
+  </section>
+  <p class="cta">Want the real thing? Contact MITHRA QA for access to the full product.</p>
+</main>
+<script>
+const TARGETS=[
+ {id:"shop",name:"demo-shop.example",note:"Online store sample"},
+ {id:"portal",name:"hr-portal.example",note:"Employee portal sample"},
+ {id:"api",name:"orders-api.example",note:"REST API sample"}];
+const CHECKS=[
+ {id:"headers",name:"Security headers",note:"Missing or weak response headers"},
+ {id:"xss",name:"Cross-site scripting",note:"Reflected and stored input"},
+ {id:"sqli",name:"SQL injection",note:"Unsafe database queries"},
+ {id:"csrf",name:"CSRF protection",note:"Forged form submissions"},
+ {id:"ddos",name:"Load and DDoS simulation",locked:1},
+ {id:"chaos",name:"Chaos testing",locked:1},
+ {id:"auth",name:"Authenticated scans",locked:1},
+ {id:"repair",name:"Auto-repair",locked:1}];
+const FINDINGS=[
+ {c:'headers',sev:'Medium',t:'Content-Security-Policy header is missing',where:'All pages',owasp:'A05 Security Misconfiguration',cvss:'5.3',why:'No CSP is sent, so injected scripts run unrestricted.',fix:"Send Content-Security-Policy, starting with default-src 'self'.",ev:'GET / → 200, no Content-Security-Policy header'},
+ {c:'headers',sev:'Medium',t:'Strict-Transport-Security header is missing',where:'All HTTPS pages',owasp:'A02 Cryptographic Failures',cvss:'5.0',why:'Browsers may be tricked into using plain HTTP.',fix:'Add Strict-Transport-Security: max-age=31536000; includeSubDomains.',ev:'GET / → 200, no Strict-Transport-Security header'},
+ {c:'headers',sev:'Low',t:'Server version shown in response headers',where:'All responses',owasp:'A05 Security Misconfiguration',cvss:'3.1',why:'Version details help attackers pick known exploits.',fix:'Remove or generalize the Server and X-Powered-By headers.',ev:'Server: nginx/1.18.0 (sample)'},
+ {c:'headers',sev:'Low',t:'Cookies missing Secure / HttpOnly flags',where:'session cookie',owasp:'A07 Identification and Authentication Failures',cvss:'3.7',why:'Script or plain-HTTP traffic could read the session cookie.',fix:'Set Secure, HttpOnly and SameSite=Lax on session cookies.',ev:'Set-Cookie: sid=sample123; Path=/'},
+ {c:'xss',sev:'High',t:'Search term reflected without encoding',where:'/search?q=',owasp:'A03 Injection',cvss:'7.4',why:"A crafted link could run script in a visitor's browser.",fix:'HTML-encode output and validate input on the server.',ev:'q=<svg onload=alert(1)> echoed unescaped in the page body'},
+ {c:'xss',sev:'High',t:'Profile name stored without sanitizing',where:'/account/profile',owasp:'A03 Injection',cvss:'7.1',why:'Stored script runs for every admin who opens the user list.',fix:'Escape on output and restrict allowed characters on input.',ev:'Name field value rendered as raw HTML in /admin/users'},
+ {c:'xss',sev:'Medium',t:'Comment field accepts HTML tags',where:'/reviews',owasp:'A03 Injection',cvss:'5.4',why:'Stored markup could affect other users who view the page.',fix:'Strip or escape tags before saving and before display.',ev:'<b>test</b> saved and displayed as bold text'},
+ {c:'xss',sev:'Low',t:'DOM-based redirect uses unvalidated URL parameter',where:'/login?next=',owasp:'A01 Broken Access Control',cvss:'3.5',why:'Visitors could be sent to a look-alike site after logging in.',fix:'Allow only same-site relative paths in the next parameter.',ev:'next=//evil.example accepted'},
+ {c:'sqli',sev:'Critical',t:'Query built by joining user input into SQL',where:'/products?id=',owasp:'A03 Injection',cvss:'9.1',why:'Attackers could read or change database records.',fix:'Use parameterized queries for every database call.',ev:"id=1' OR '1'='1 returned all 248 sample rows"},
+ {c:'sqli',sev:'High',t:'Login form returns database error text',where:'POST /login',owasp:'A03 Injection',cvss:'7.5',why:'Error messages reveal table and column names.',fix:'Return a generic error and log details server-side.',ev:'Sample error: syntax error near "\'" at position 41'},
+ {c:'sqli',sev:'Medium',t:'Sort parameter inserted into ORDER BY',where:'/orders?sort=',owasp:'A03 Injection',cvss:'5.9',why:'Attackers can probe the database through the sort field.',fix:'Map sort values to a fixed allow-list of columns.',ev:'sort=price;-- changed response ordering and timing'},
+ {c:'csrf',sev:'High',t:'Profile update form has no anti-forgery token',where:'POST /account/update',owasp:'A01 Broken Access Control',cvss:'7.1',why:'Another site could trigger changes for a logged-in user.',fix:'Add per-session CSRF tokens and SameSite cookies.',ev:'Request accepted with Origin: https://other.example'},
+ {c:'csrf',sev:'Medium',t:'Password change does not ask for the current password',where:'POST /account/password',owasp:'A07 Identification and Authentication Failures',cvss:'5.8',why:'A hijacked session can lock the real owner out.',fix:'Require the current password for sensitive changes.',ev:'Request succeeded with no current_password field'},
+ {c:'csrf',sev:'Low',t:'Logout works through a GET link',where:'GET /logout',owasp:'A01 Broken Access Control',cvss:'2.6',why:'A hidden image on another site can sign users out.',fix:'Make logout a POST request with a CSRF token.',ev:'<img src=/logout> ended the sample session'}];
+const $=id=>document.getElementById(id);
+let target=null,checks=new Set();
+function show(p){["p1","p2","p3","p4"].forEach(x=>$(x).classList.toggle("hide",x!==p));
+ const n=+p[1];for(let i=1;i<=4;i++)$("st"+i).classList.toggle("on",i===n);window.scrollTo({top:0,behavior:"smooth"})}
+function opt(o,sel,onClick){const b=document.createElement("button");b.className="opt"+(o.locked?" locked":"")+(sel?" sel":"");
+ b.innerHTML=(o.locked?'<span class="tag">Full product</span>':"")+"<b></b><small></small>";
+ b.querySelector("b").textContent=o.name;b.querySelector("small").textContent=o.locked?"Not available in this demo":o.note;
+ if(o.locked)b.setAttribute("aria-disabled","true");else b.onclick=onClick;return b}
+function drawTargets(){const g=$("targets");g.innerHTML="";TARGETS.forEach(t=>g.append(opt(t,target===t,()=>{target=t;drawTargets();$("n1").disabled=false})))}
+function drawChecks(){const g=$("checks");g.innerHTML="";CHECKS.forEach(c=>g.append(opt(c,checks.has(c.id),()=>{checks.has(c.id)?checks.delete(c.id):checks.add(c.id);drawChecks();$("n2").disabled=!checks.size})))}
+$("n1").onclick=()=>show("p2");
+document.querySelectorAll("[data-back]").forEach(b=>b.onclick=()=>show(b.dataset.back));
+$("n2").onclick=()=>{show("p3");$("tname").textContent=target.name;run()};
+function run(){const log=$("log"),prog=$("prog");log.textContent="";prog.style.width="0";
+ const lines=["[demo] Simulated scan. No network traffic is generated.","Resolving sample target "+target.name+" ..."];
+ CHECKS.filter(c=>checks.has(c.id)).forEach(c=>lines.push("Running check: "+c.name+" ...","  analyzing sample responses","  check complete"));
+ lines.push("Compiling sample report ...");let i=0;
+ const t=setInterval(()=>{log.textContent+=lines[i]+"\n";log.scrollTop=log.scrollHeight;i++;prog.style.width=Math.round(i/lines.length*100)+"%";
+  if(i>=lines.length){clearInterval(t);setTimeout(results,500)}},380)}
+function results(){const f=FINDINGS.filter(x=>checks.has(x.c));const n=s=>f.filter(x=>x.sev===s).length;
+ $("rsub").textContent="Sample findings for "+target.name+". Click a finding to see why it matters and how it would be fixed.";
+ $("score").innerHTML="";[["Critical"],["High"],["Medium"],["Low"]].forEach(([s])=>{const d=document.createElement("div");d.innerHTML="<b>"+n(s)+"</b>"+s;$("score").append(d)});
+ const box=$("finds");box.innerHTML="";
+ if(!f.length){box.textContent="No sample findings for the checks you chose.";}
+ f.forEach(x=>{const wrap=document.createElement("div");const b=document.createElement("button");b.className="find";
+  b.innerHTML='<span class="sev s-'+x.sev+'">'+x.sev+'</span><span class="t"></span><span>▾</span>';b.querySelector(".t").textContent=x.t;
+  const d=document.createElement("div");d.className="detail hide";
+  d.innerHTML="<p><b>Where:</b> <code class=w></code></p><p><b>Category:</b> <span class=o></span> · <b>Score:</b> <span class=v></span> (sample)</p><p><b>Evidence:</b> <code class=e></code></p><p><b>Why it matters:</b> <span class=y></span></p><p><b>Suggested fix:</b> <span class=x></span></p><p><small>Status: Open · Sample text for demonstration only.</small></p>";
+  d.querySelector(".w").textContent=x.where;d.querySelector(".o").textContent=x.owasp;d.querySelector(".v").textContent=x.cvss;d.querySelector(".e").textContent=x.ev;d.querySelector(".y").textContent=x.why;d.querySelector(".x").textContent=x.fix;
+  b.onclick=()=>{d.classList.toggle("hide");b.classList.toggle("sel")};wrap.append(b,d);box.append(wrap)});
+ show("p4")}
+$("again").onclick=()=>{target=null;checks=new Set();$("n1").disabled=true;$("n2").disabled=true;drawTargets();drawChecks();show("p1")};
+drawTargets();drawChecks();
+</script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MITHRA — Audit Everything</title>
+<meta name="description" content="MITHRA QA/Audit. Audit everything. Coming soon.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="MITHRA">
+<meta property="og:description" content="MITHRA QA/Audit. Audit everything. Coming soon.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MITHRA">
+<meta name="twitter:description" content="MITHRA QA/Audit. Audit everything. Coming soon.">
+<meta name="theme-color" content="#04070d">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #04070d; --ink: #e9fdff; --dim: rgba(233,253,255,.62); --cyan: #2ee6f5; --teal: #10b981;
+    --font: "Segoe UI Variable Display", "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); color: var(--ink); font-family: var(--font); scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); overflow-x: hidden; }
+  #gl { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; z-index: 0; }
+  #fallback { position: fixed; inset: 0; z-index: 0; display: none;
+    background: radial-gradient(60% 50% at 50% 45%, rgba(46,230,245,.18), transparent 70%), var(--bg); }
+  #fallback img { position: absolute; left: 50%; top: 42%; width: min(46vw, 320px); transform: translate(-50%, -50%); opacity: .7; }
+
+  /* scroll track: each section is one "beat" of the flight */
+  main { position: relative; z-index: 1; }
+  section { min-height: 100vh; display: grid; place-items: center; padding: 16vh 16px; text-align: center; }
+  section.hero { place-items: end center; padding-bottom: 14vh; }
+  .beat { max-width: 760px; opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s ease; }
+  .beat.on { opacity: 1; transform: none; }
+  .word { margin: 0; font-size: clamp(40px, 9vw, 112px); font-weight: 700; letter-spacing: .32em; padding-left: .32em;
+    background: linear-gradient(180deg, #ffffff 10%, #9ff3ff 55%, #2ec9e0 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 28px rgba(46,230,245,.35)); }
+  .kicker { margin: 18px 0 0; font-size: clamp(12px, 2.4vw, 15px); letter-spacing: .5em; padding-left: .5em; text-transform: uppercase; color: var(--cyan); }
+  h2 { margin: 0; font-size: clamp(32px, 6.5vw, 72px); font-weight: 700; letter-spacing: .04em; line-height: 1.05; }
+  h2 span { color: var(--cyan); }
+  h2, p.lede, .soon, .team, .kicker { text-shadow: 0 2px 18px rgba(2,8,14,.95), 0 0 3px rgba(2,8,14,.9); }
+  p.lede { margin: 18px auto 0; max-width: 620px; font-size: clamp(16px, 2.6vw, 20px); line-height: 1.6; color: var(--dim); }
+  .chips { margin: 26px auto 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 640px; }
+  .chips span { padding: 8px 14px; border-radius: 999px; font-size: 14px; color: var(--ink);
+    background: rgba(8,22,30,.55); border: 1px solid rgba(46,230,245,.28); backdrop-filter: blur(8px); }
+  .soon { font-size: clamp(14px, 2.6vw, 18px); letter-spacing: .6em; padding-left: .6em; text-transform: uppercase; color: var(--dim); margin: 0 0 26px; }
+  .cta { display: inline-flex; align-items: center; gap: 10px; padding: 15px 30px; border-radius: 12px; text-decoration: none;
+    font-weight: 700; font-size: 17px; letter-spacing: .08em; color: #03161c;
+    background: linear-gradient(135deg, #2ee6f5, #07a9c9 55%, #10b981); box-shadow: 0 10px 40px rgba(46,230,245,.28);
+    transition: transform .2s ease, box-shadow .2s ease; }
+  .cta:hover, .cta:focus-visible { transform: translateY(-2px); box-shadow: 0 14px 50px rgba(46,230,245,.45); }
+  .cta:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+  .team { margin-top: 44px; display: flex; gap: 28px; justify-content: center; flex-wrap: wrap;
+    font-size: 13px; letter-spacing: .35em; text-transform: uppercase; color: var(--dim); }
+  footer { position: relative; z-index: 1; padding: 28px 16px 36px; text-align: center; font-size: 12px; color: rgba(233,253,255,.4); }
+  .hint { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 2; font-size: 11px; letter-spacing: .4em;
+    text-transform: uppercase; color: var(--dim); transition: opacity .5s; pointer-events: none; }
+  .hint::after { content: ""; display: block; width: 1px; height: 34px; margin: 10px auto 0;
+    background: linear-gradient(var(--cyan), transparent); animation: drip 1.8s ease-in-out infinite; }
+  @keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; }
+    51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+  @media (prefers-reduced-motion: reduce) { .beat { transition: none; } .hint::after { animation: none; } html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div id="fallback" aria-hidden="true"><img src="logo.svg" alt=""></div>
+<div class="hint" id="hint">Scroll</div>
+
+<main>
+  <section class="hero">
+    <div class="beat on">
+      <h1 class="word">MITHRA</h1>
+      <p class="kicker">Audit Everything</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="beat">
+      <h2>Every page.<br><span>Every request.</span><br>Every edge case.</h2>
+      <p class="lede">MITHRA is an AI-powered QA and audit platform that watches your product the way an attacker, a tester and a real user would, all at once.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="beat">
+      <h2>One scan. <span>Every angle.</span></h2>
+      <div class="chips">
+        <span>Security &amp; OWASP</span><span>Load &amp; stress</span><span>Fuzzing</span><span>Accessibility</span>
+        <span>Visual audit</span><span>Authenticated flows</span><span>AI test cases</span><span>SQL workbench</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="soon">
+    <div class="beat">
+      <p class="soon">Coming soon</p>
+      <a class="cta" href="demo/">Try the demo <span aria-hidden="true">→</span></a>
+      <div class="team"><span>Johnatan Milrad</span><span>Rubi Elbaz</span></div>
+    </div>
+  </section>
+</main>
+<footer>© 2025–2026 MITHRA</footer>
+
+<script>
+// ── Section reveal ─────────────────────────────────────────────────────────
+const beats = [...document.querySelectorAll(".beat")];
+const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add("on")), { threshold: 0.35 });
+beats.forEach(b => io.observe(b));
+
+// ── Scroll progress (0 at top → 1 at the end) ──────────────────────────────
+const hint = document.getElementById("hint");
+let target = 0, progress = 0;
+function readScroll() {
+  const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+  target = Math.min(1, Math.max(0, scrollY / max));
+  hint.style.opacity = scrollY > 40 ? 0 : 1;
+}
+addEventListener("scroll", readScroll, { passive: true });
+addEventListener("resize", readScroll);
+readScroll();
+
+// ── WebGL flight: approach the MITHRA sun-eye, dive through the iris into
+//    a scanning tunnel, then settle on a calm audit grid. ─────────────────
+const FRAG = `
+precision highp float;
+uniform vec2 u_res; uniform float u_time, u_p; uniform vec2 u_mouse;
+#define PI 3.14159265
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
+float noise(vec2 p){ vec2 i=floor(p), f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+  return mix(mix(hash(i),hash(i+vec2(1,0)),u.x), mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x), u.y); }
+float fbm(vec2 p){ float v=0.0,a=0.5; for(int i=0;i<5;i++){ v+=a*noise(p); p*=2.0; a*=0.5; } return v; }
+float sdVesica(vec2 p,float r,float d){ p=abs(p); float b=sqrt(r*r-d*d);
+  return ((p.y-b)*d>p.x*b) ? length(p-vec2(0.0,b)) : length(p-vec2(-d,0.0))-r; }
+vec3 brand(vec2 p){ float t=clamp(0.5+0.4*(p.x-p.y),0.0,1.0);
+  return mix(mix(vec3(0.18,0.90,0.96),vec3(0.03,0.66,0.79),smoothstep(0.0,0.55,t)),vec3(0.06,0.73,0.51),smoothstep(0.55,1.0,t)); }
+
+// stars with depth parallax; speed rises with the flight
+vec3 stars(vec2 p, float z){
+  vec3 c=vec3(0.0);
+  for(int l=0;l<3;l++){
+    float fl=float(l); float scale=6.0+fl*7.0;
+    vec2 q=p*scale/(1.0+z*(0.6+fl*0.4)) + fl*17.0;
+    vec2 id=floor(q), f=fract(q)-0.5;
+    float h=hash(id);
+    float s=smoothstep(0.08,0.0,length(f-vec2(hash(id+3.1),hash(id+7.7))*0.6+0.3)) * step(0.82,h);
+    c+=vec3(0.55,0.95,1.0)*s*(0.4+0.6*sin(u_time*2.0+h*40.0));
+  }
+  return c;
+}
+
+void main(){
+  vec2 uv=(gl_FragCoord.xy-0.5*u_res)/u_res.y;
+  float p=u_p, t=u_time;
+  uv += u_mouse*0.02*(1.0-p);
+  // phase 1 (0..0.55): approach and dive. zoom grows exponentially.
+  float dive=smoothstep(0.0,0.55,p);
+  float zoom=exp(dive*4.2);                       // up to ~67x
+  // at rest the mark sits above the wordmark; it centers as the dive starts
+  float rest = 1.0 - smoothstep(0.0, 0.25, p);
+  float fit = max(1.0, (u_res.y / u_res.x) * 0.72);   // portrait phones: fit width
+  vec2 q = (uv - vec2(0.0, 0.19*rest)) * mix(2.2, 2.75, rest) * fit / zoom;
+  vec3 col=vec3(0.015,0.03,0.05);
+  col+=stars(uv,dive*6.0)*(1.0-smoothstep(0.45,0.6,p));
+  // nebula
+  float neb=fbm(uv*1.6+vec2(t*0.02,0.0)+dive*2.0);
+  col+=vec3(0.02,0.18,0.22)*neb*neb*1.2;
+
+  // the sun-eye mark
+  float px=2.2/zoom/u_res.y*2.0;
+  float a=atan(q.y,q.x)+t*0.12+dive*1.5; float sector=PI/4.0;
+  float aa=mod(a+sector*0.5,sector)-sector*0.5;
+  vec2 rq=length(q)*vec2(cos(aa),sin(aa));
+  float w=0.075*(0.98-rq.x)/0.28;
+  float dRay=max(abs(rq.y)-w,max(0.70-rq.x,rq.x-0.98));
+  float dRing=abs(length(q)-0.58)-0.036;
+  float dEye=sdVesica(q.yx,0.587,0.377);
+  float eyeIn=smoothstep(px,-px,dEye);
+  float mark=max(smoothstep(px,-px,dRay),smoothstep(px,-px,dRing));
+  float logoFade=1.0-smoothstep(0.42,0.56,p);
+  col=mix(col,brand(q),mark*logoFade);
+  col=mix(col,vec3(0.02,0.06,0.09),eyeIn*logoFade*(1.0-smoothstep(0.3,0.5,p)));
+  col=mix(col,brand(q),smoothstep(px,-px,abs(dEye)-0.022)*logoFade);
+  // iris: domain-warped fbm, grows to fill the screen as we dive
+  float ir=0.135;
+  vec2 w2=vec2(fbm(q*9.0+t*0.3),fbm(q*9.0+vec2(5.2,1.3)-t*0.25));
+  float sw=fbm(q*7.0+3.0*w2);
+  vec3 irisC=mix(vec3(0.02,0.50,0.66),vec3(0.75,0.99,1.0),sw*1.2);
+  float iris=smoothstep(px,-px,length(q)-ir)*logoFade;
+  col=mix(col,irisC*(1.1-length(q)/ir*0.5),iris);
+  col=mix(col,vec3(0.01,0.03,0.05),smoothstep(px,-px,length(q)-0.048)*logoFade);
+  // glow
+  col+=vec3(0.18,0.9,0.96)*exp(-6.0*max(min(dRing,dRay),0.0))*0.25*logoFade;
+
+  // phase 2 (0.45..1): through the pupil into the scanning tunnel
+  float tun=smoothstep(0.45,0.62,p);
+  if(tun>0.0){
+    float r=length(uv)+1e-3, th=atan(uv.y,uv.x);
+    float depth=0.35/r + t*0.6 + p*14.0;
+    vec2 tq=vec2(th/PI*6.0, depth);
+    vec2 g=abs(fract(tq)-0.5);
+    float grid=smoothstep(0.47,0.5,max(g.x,g.y));
+    float scan=exp(-pow((fract(depth*0.25)-0.5)/0.03,2.0));
+    vec3 tc=mix(vec3(0.0),brand(uv*2.0),grid*0.55)*smoothstep(0.0,0.6,r);
+    tc+=vec3(0.37,0.94,1.0)*scan*0.5*smoothstep(0.05,0.7,r);
+    tc*=smoothstep(0.0,0.25,r)*1.3;
+    // phase 3 (0.8..1): tunnel calms into a soft audit grid behind the CTA
+    float calm=smoothstep(0.8,1.0,p);
+    vec2 fg=abs(fract(uv*6.0+vec2(0.0,t*0.05))-0.5);
+    vec3 flat_=vec3(0.03,0.2,0.24)*smoothstep(0.47,0.5,max(fg.x,fg.y))*0.6
+              + vec3(0.02,0.12,0.15)*exp(-length(uv)*2.0);
+    tc=mix(tc,flat_,calm);
+    col=mix(col,tc,tun);
+  }
+  // vignette + gentle grain
+  col*=1.0-0.45*dot(uv,uv);
+  col+=(hash(gl_FragCoord.xy+t)-0.5)*0.015;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+(function () {
+  const canvas = document.getElementById("gl");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const gl = canvas.getContext("webgl", { antialias: false, alpha: false, powerPreference: "high-performance" });
+  const fallback = () => { canvas.style.display = "none"; document.getElementById("fallback").style.display = "block"; };
+  if (!gl) return fallback();
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  let prog;
+  try {
+    prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, "attribute vec2 a;void main(){gl_Position=vec4(a,0.0,1.0);}"));
+    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+  } catch (e) { console.error(e); return fallback(); }
+  gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, "a");
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const U = n => gl.getUniformLocation(prog, n);
+  const uRes = U("u_res"), uTime = U("u_time"), uP = U("u_p"), uMouse = U("u_mouse");
+  let mx = 0, my = 0;
+  addEventListener("pointermove", e => { mx = e.clientX / innerWidth - 0.5; my = 0.5 - e.clientY / innerHeight; }, { passive: true });
+
+  // Render at a capped pixel ratio so phones and 4K screens stay smooth.
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, innerWidth < 700 ? 1.25 : 1.5);
+    canvas.width = Math.floor(innerWidth * dpr);
+    canvas.height = Math.floor(innerHeight * dpr);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+  }
+  addEventListener("resize", resize);
+  resize();
+
+  const t0 = performance.now();
+  function frame(now) {
+    progress += (target - progress) * (reduce ? 1 : 0.08);   // eased camera
+    gl.uniform1f(uTime, reduce ? 0 : (now - t0) / 1000);
+    gl.uniform1f(uP, progress);
+    gl.uniform2f(uMouse, mx, my);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
