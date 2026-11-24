@@ -25,98 +25,160 @@
 :root{
   --u:calc(100vh/1058); --uw:calc(100vw/1487);
   --h:clamp(var(--u),calc(var(--u)*.65 + var(--uw)*.35),calc(var(--u)*1.16));
-  --ink:#fafafa; --muted:#a7a6a6; --nav:#b6b5b5; --strip:#8b8a8a; --gold:#e8c47c;
+  --ink:#fafafa; --muted:#a7a6a6; --nav:#b6b5b5; --strip:#8b8a8a; --gold:#e8c47c; --line:rgba(255,255,255,.09);
   --pill:#fff; --pill-ink:#050505; --bg:#050505;
   --ease:cubic-bezier(.22,1,.36,1);
+  --ox:50%; --oy:46%;            /* where the door sits in the video: the camera pushes in here */
+  --gut:calc(75.5*var(--u));
 }
-@supports (height:100dvh){:root{--u:calc(100dvh/1058)}}
+@supports (height:100svh){:root{--u:calc(100svh/1058)}}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
-  font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
-  -webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  -webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
-.stage{position:fixed;inset:0;overflow:hidden;background:var(--bg)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 
-/* video plate */
+/* ───────── intro: sticky hero, scroll pushes the camera through the door ───────── */
+.intro{position:relative;height:260vh}
+.stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--bg)}
 .plate{position:absolute;inset:0;pointer-events:none}
 .plate-video{position:absolute;left:50%;top:calc(1*var(--u));width:calc(1492*var(--u));height:calc(1054*var(--u));
-  transform:translateX(calc(-50% - .5*var(--u)));object-fit:cover}
-.plate::after{content:"";position:absolute;inset:0;background:
+  transform:translateX(calc(-50% - .5*var(--u))) scale(var(--zoom,1));transform-origin:var(--ox) var(--oy);
+  object-fit:cover;will-change:transform}
+.plate::after{content:"";position:absolute;inset:0;opacity:var(--fades,1);background:
   linear-gradient(to bottom,rgba(5,5,5,0) 78.8%,rgba(5,5,5,.23) 79.6%,rgba(5,5,5,.45) 81.4%,rgba(5,5,5,.75) 83.3%,rgba(5,5,5,.84) 85.2%,rgba(5,5,5,.888) 88%,rgba(5,5,5,.905) 91%,rgba(5,5,5,.96) 95%,#050505 100%),
   linear-gradient(to right,#050505 calc(50% - 746*var(--u)),transparent calc(50% - 676*var(--u)),transparent calc(50% + 676*var(--u)),#050505 calc(50% + 746*var(--u)))}
+.flash{position:absolute;inset:0;pointer-events:none;opacity:var(--flash,0);
+  background:radial-gradient(120% 90% at 50% 50%,#fffdf8 0%,#fbf3e2 45%,#f1e2c2 100%)}
+.fadeout{opacity:var(--ui,1);transition:none}
 
 /* header */
-.brand{position:absolute;left:calc(75*var(--u));top:calc(24*var(--u));display:flex;align-items:center;gap:calc(14*var(--u))}
+.brand{position:absolute;left:calc(75*var(--u));top:calc(24*var(--u));display:flex;align-items:center;gap:calc(14*var(--u));z-index:3}
 .brand img{width:calc(54*var(--u));height:calc(54*var(--u));display:block}
 .brand span{font-size:calc(19*var(--u));letter-spacing:.34em;font-weight:500;color:var(--gold)}
 .links{position:absolute;left:50%;top:calc(51*var(--u));transform:translate(-50%,-50%);display:flex;gap:calc(25*var(--u));
-  font-size:calc(19*var(--u));color:var(--nav)}
-.links a:hover{color:var(--ink)}
+  font-size:calc(19*var(--u));color:var(--nav);z-index:3}
+.links a{transition:color .2s}.links a:hover{color:var(--ink)}
 .pill{display:inline-flex;align-items:center;justify-content:center;background:var(--pill);color:var(--pill-ink);border-radius:999px;font-weight:500;transition:transform .3s var(--ease),background .3s}
 .pill:hover{transform:translateY(-1px);background:#f1e6cf}
 .pill span{transform:translateY(calc(1*var(--u)))}
-.pill-nav{position:absolute;right:calc(75.4*var(--u));top:calc(27*var(--u));width:calc(175*var(--u));height:calc(49*var(--u));font-size:calc(20.6*var(--u))}
-.burger{display:none}
-.menu{display:none}
+.pill-nav{position:absolute;right:calc(75.4*var(--u));top:calc(27*var(--u));width:calc(175*var(--u));height:calc(49*var(--u));font-size:calc(20.6*var(--u));z-index:3}
+.burger,.menu{display:none}
 
-/* hero */
-.headline{position:absolute;left:calc(75.5*var(--u));top:calc(230.5*var(--u));font-weight:400;
+/* hero copy */
+.headline{position:absolute;left:var(--gut);top:calc(230.5*var(--u));font-weight:400;
   font-size:calc(71.6*var(--h));line-height:calc(80.5*var(--h));letter-spacing:calc(.3*var(--h));white-space:nowrap}
 .headline span{display:block}
-.headline em{font-style:normal;color:var(--gold)}
-.sub{position:absolute;left:calc(75.5*var(--u));top:calc(230.5*var(--u) + 189*var(--h));color:var(--muted);
+.headline em,.gold{font-style:normal;color:var(--gold)}
+.sub{position:absolute;left:var(--gut);top:calc(230.5*var(--u) + 189*var(--h));color:var(--muted);
   font-size:calc(20.7*var(--h));line-height:calc(23.5*var(--h));word-spacing:calc(1.8*var(--h))}
 .sub span{display:block;white-space:nowrap}
 .pill-cta{position:absolute;left:calc(74.9*var(--u));top:calc(230.5*var(--u) + 264.5*var(--h));width:calc(175.6*var(--h));height:calc(50*var(--h));font-size:calc(20.6*var(--h))}
 .ghost{position:absolute;left:calc(74.9*var(--u) + 220.6*var(--h));top:calc(230.5*var(--u) + 279.5*var(--h));font-size:calc(20.6*var(--h));font-weight:500;letter-spacing:calc(.12*var(--h));color:#fff;opacity:.9}
+.hero{transform:translateY(calc(var(--lift,0)*-1px))}
 
-/* capability strip (in place of partner logos: MITHRA has none yet, so no fake ones) */
+/* capability strip in the hero (links to the section below) */
 .logos{position:absolute;left:50%;top:calc(992*var(--u));transform:translateX(-50%);display:flex;gap:calc(46*var(--u));
   color:var(--strip);font-size:calc(17*var(--u));font-weight:600;letter-spacing:.04em;white-space:nowrap}
-.lg{display:flex;align-items:center;gap:calc(10*var(--u))}
+.lg{display:flex;align-items:center;gap:calc(10*var(--u));transition:color .2s}
+a.lg:hover{color:var(--ink)}
 .lg svg{width:calc(24*var(--u));height:calc(24*var(--u));flex:none}
+.cue{position:absolute;right:calc(75*var(--u));bottom:calc(52*var(--u));display:flex;align-items:center;gap:12px;
+  color:var(--strip);font-size:calc(14*var(--u));letter-spacing:.3em;text-transform:uppercase}
+.cue i{display:block;width:1px;height:calc(46*var(--u));background:linear-gradient(var(--gold),transparent);transform-origin:top}
+
+/* ───────── sections after the door ───────── */
+.light{position:relative;min-height:92vh;margin-top:-1px;display:flex;align-items:flex-end;
+  background:linear-gradient(180deg,#f1e2c2 0%,#8f7f5f 16%,#2a251c 32%,#0a0907 46%,#050505 58%)}
+.wrap{width:min(1200px,100% - 2*clamp(22px,5vw,76px));margin:0 auto}
+.light .wrap{padding-bottom:12vh}
+.eyebrow{color:var(--gold);letter-spacing:.32em;text-transform:uppercase;font-size:12px;font-weight:600}
+.big{font-size:clamp(34px,5.6vw,84px);line-height:1.04;font-weight:400;letter-spacing:-.01em;margin-top:22px;max-width:15ch}
+.lede{color:var(--muted);font-size:clamp(16px,1.35vw,20px);line-height:1.55;margin-top:24px;max-width:46ch}
+
+section.block{padding:clamp(90px,14vh,160px) 0;border-top:1px solid var(--line)}
+.h2{font-size:clamp(30px,3.6vw,54px);font-weight:400;line-height:1.08;margin-top:16px;max-width:20ch}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:56px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.cap{background:#070707;padding:34px 30px 38px;min-height:230px;position:relative;transition:background .4s}
+.cap:hover{background:#0c0b09}
+.cap .n{color:var(--gold);font-size:13px;letter-spacing:.2em;font-weight:600}
+.cap svg{width:30px;height:30px;color:var(--ink);margin:26px 0 18px;display:block}
+.cap h3{font-size:21px;font-weight:500}
+.cap p{color:var(--muted);font-size:15.5px;line-height:1.55;margin-top:10px}
+.cap::after{content:"";position:absolute;left:0;top:0;height:1px;width:100%;background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  transform:scaleX(0);transition:transform .9s var(--ease)}
+.cap:hover::after{transform:scaleX(1)}
+
+.steps{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:70px;padding-top:44px}
+.steps::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--line)}
+.steps .bar{position:absolute;left:0;top:0;height:1px;width:100%;background:linear-gradient(90deg,var(--gold),#fff6dd);
+  transform-origin:left;transform:scaleX(var(--draw,0));box-shadow:0 0 12px rgba(232,196,124,.6)}
+.step b{display:block;color:var(--gold);font-weight:500;font-size:15px;letter-spacing:.2em}
+.step h3{font-size:24px;font-weight:500;margin-top:16px}
+.step p{color:var(--muted);font-size:16px;line-height:1.55;margin-top:10px;max-width:34ch}
+
+.statement p{font-size:clamp(28px,3.9vw,58px);line-height:1.18;font-weight:400;max-width:24ch}
+.statement .w{opacity:.16;transition:opacity .25s linear}
+.statement .w.on{opacity:1}
+
+.final{position:relative;min-height:100vh;display:grid;place-items:end center;text-align:center;overflow:hidden;border-top:1px solid var(--line);padding-bottom:14vh}
+.door{position:absolute;left:50%;top:8vh;width:clamp(80px,9vw,130px);height:clamp(200px,40vh,380px);transform:translateX(-50%) scaleY(var(--open,.2));transform-origin:bottom;
+  background:linear-gradient(#fffdf6,#f7ecd4);box-shadow:0 0 60px 18px rgba(241,226,194,.35),0 0 220px 80px rgba(232,196,124,.16);border-radius:2px;opacity:var(--doorA,.4)}
+.final .inner{position:relative;z-index:1;padding:0 22px}
+.final h2{font-size:clamp(40px,6.4vw,96px);font-weight:400;line-height:1;text-shadow:0 4px 40px #050505}
+.final .actions2{display:flex;gap:26px;align-items:center;justify-content:center;margin-top:34px}
+.final .pill{height:52px;padding:0 30px;font-size:17px}
+.final .ghost2{color:#fff;opacity:.85;font-weight:500}
+footer{border-top:1px solid var(--line);padding:30px 0 40px;color:#6d6c6c;font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+/* reveal on scroll */
+.rv{opacity:0;transform:translateY(34px);transition:opacity 1s var(--ease),transform 1s var(--ease);transition-delay:var(--d,0s)}
+.rv.in{opacity:1;transform:none}
 
 /* entrance */
 @media (prefers-reduced-motion:no-preference){
   @keyframes rise{from{opacity:0;transform:translateY(calc(14*var(--u)))}}
   @keyframes riseNav{from{opacity:0;transform:translate(-50%,calc(-50% + 14*var(--u)))}to{opacity:1;transform:translate(-50%,-50%)}}
   @keyframes fade{from{opacity:0}}
+  @keyframes drip{0%{transform:scaleY(0)}50%{transform:scaleY(1)}100%{transform:scaleY(1);opacity:0}}
   .brand,.pill-nav{animation:rise .8s var(--ease) both}
   .links{animation:riseNav .8s var(--ease) both}
   .headline{animation:rise .9s var(--ease) .06s both}
   .sub{animation:rise .9s var(--ease) .14s both}
   .pill-cta,.ghost{animation:rise .9s var(--ease) .22s both}
-  .lg{animation:fade 1.1s ease .34s both}
+  .lg,.cue{animation:fade 1.1s ease .34s both}
+  .cue i{animation:drip 2.2s var(--ease) 1.2s infinite}
 }
 
-/* portrait / phone: flow layout */
+/* ───────── portrait / phone ───────── */
 @media (max-aspect-ratio:11/10){
-  :root{--m:min(100vw/430,1.34px);--u:var(--m);--h:var(--m)}
-  html,body{overflow:auto}
-  .stage{position:relative;min-height:100dvh;display:flex;flex-direction:column;
-    padding:max(18px,env(safe-area-inset-top)) 22px max(24px,env(safe-area-inset-bottom))}
-  .plate-video{inset:0;left:0;top:0;width:100%;height:100%;transform:none;object-position:43% center}
+  :root{--m:min(100vw/430,1.34px);--u:var(--m);--h:var(--m);--ox:63%;--oy:55%}
+  .intro{height:220vh}
+  .stage{display:flex;flex-direction:column;padding:max(18px,env(safe-area-inset-top)) 22px max(22px,env(safe-area-inset-bottom))}
+  .plate-video{inset:0;left:0;top:0;width:100%;height:100%;transform:scale(var(--zoom,1));object-position:43% center}
   .plate::after{background:
     linear-gradient(to right,rgba(5,5,5,.86),rgba(5,5,5,.66) 42%,rgba(5,5,5,.2) 78%,rgba(5,5,5,.1)),
     linear-gradient(to bottom,rgba(5,5,5,.72),rgba(5,5,5,.34) 24%,rgba(5,5,5,.34) 56%,rgba(5,5,5,.8) 82%,rgba(5,5,5,.97) 94%,#050505)}
   .brand,.headline,.sub,.pill-cta,.ghost,.logos{position:relative;left:auto;top:auto;right:auto;transform:none}
-  header{position:relative;display:flex;justify-content:space-between;align-items:center;z-index:3}
+  header{position:relative;display:flex;justify-content:space-between;align-items:center;z-index:4}
   .brand img{width:44px;height:44px}.brand span{font-size:15px}
-  .links,.pill-nav{display:none}
+  .links,.pill-nav,.cue{display:none}
   .burger{display:grid;place-content:center;gap:6px;width:48px;height:48px;border-radius:999px;cursor:pointer;
     background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
   .burger i{display:block;width:18px;height:1.5px;background:#fff;transition:transform .35s var(--ease)}
   .is-open .burger i:first-child{transform:translateY(3.75px) rotate(45deg)}
   .is-open .burger i:last-child{transform:translateY(-3.75px) rotate(-45deg)}
-  .menu{display:block;position:fixed;inset:0;z-index:2;opacity:0;visibility:hidden;transition:opacity .42s,visibility .42s;
+  .menu{display:block;position:fixed;inset:0;z-index:3;opacity:0;visibility:hidden;transition:opacity .42s,visibility .42s;
     background:linear-gradient(180deg,rgba(5,5,5,.9),rgba(5,5,5,.97));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
   .is-open .menu{opacity:1;visibility:visible}
   .menu-inner{padding:110px 26px 40px;display:flex;flex-direction:column;gap:26px}
   .menu-eyebrow{color:var(--strip);letter-spacing:.3em;text-transform:uppercase;font-size:12px}
   .menu-list{list-style:none;display:grid;gap:14px}
-  .menu-list a{font-size:max(25px,31px);display:flex;justify-content:space-between}
+  .menu-list a{font-size:31px;display:flex;justify-content:space-between}
   .menu-list a::after{content:"›";color:var(--strip)}
-  main.hero{position:relative;z-index:1;margin-top:auto;padding-top:38vh}
+  main.hero{position:relative;z-index:1;margin-top:auto}
   .headline{white-space:normal;font-size:calc(46*var(--m));line-height:1.08}
   .headline span{display:inline}
   .sub{margin-top:18px;font-size:16px;line-height:1.45}
@@ -124,76 +186,208 @@ a{color:inherit;text-decoration:none}
   .actions{display:flex;align-items:center;gap:22px;margin-top:26px}
   .pill-cta{width:auto;height:50px;padding:0 26px;font-size:16px}
   .ghost{font-size:16px}
-  .logos{z-index:1;margin-top:42px;display:grid;grid-template-columns:1fr 1fr;gap:16px 18px;font-size:13px}
+  .logos{z-index:1;margin-top:34px;display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;font-size:13px}
   .lg svg{width:20px;height:20px}
+  .grid,.steps{grid-template-columns:1fr}
+  .steps{gap:34px}
+  .cap{min-height:0}
 }
+@media (max-aspect-ratio:11/10) and (max-height:700px){.logos{display:none}}
 @media (min-width:600px) and (max-aspect-ratio:11/10){
   :root{--m:min(100vw/860,100vh/760,1.25px)}
   .plate-video{object-position:44% center}
   .headline span{display:block}
   .logos{display:flex;flex-wrap:nowrap;gap:28px;font-size:14px}
+  .grid{grid-template-columns:1fr 1fr}
 }
-@media (prefers-reduced-motion:reduce){.menu,.burger i{transition-duration:.001s}}
+@media (prefers-reduced-motion:reduce){
+  .intro{height:auto}.stage{position:relative}
+  .menu,.burger i{transition-duration:.001s}
+  .rv{opacity:1;transform:none;transition:none}
+  .statement .w{opacity:1}
+}
 </style>
 </head>
 <body>
-<div class="stage" id="stage">
-  <div class="plate">
-    <video class="plate-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
-      <source src="assets/hero.mp4" type="video/mp4">
-    </video>
-  </div>
+<div class="intro" id="intro">
+  <div class="stage" id="stage">
+    <div class="plate">
+      <video class="plate-video" id="vid" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+        <source src="assets/hero.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="flash" aria-hidden="true"></div>
 
-  <header>
-    <a class="brand" href="./" aria-label="MITHRA home"><img src="logo.svg" alt=""><span>MITHRA</span></a>
-    <nav class="links" aria-label="Primary">
-      <a href="demo/">Demo</a><a href="#capabilities">What it audits</a>
+    <header class="fadeout">
+      <a class="brand" href="./" aria-label="MITHRA home"><img src="logo.svg" alt=""><span>MITHRA</span></a>
+      <nav class="links" aria-label="Primary">
+        <a href="#capabilities">What it audits</a><a href="#how">How it works</a><a href="demo/">Demo</a>
+      </nav>
+      <a class="pill pill-nav" href="demo/"><span>See the demo</span></a>
+      <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><i></i><i></i></button>
+    </header>
+
+    <nav class="menu" id="menu" aria-hidden="true">
+      <div class="menu-inner">
+        <p class="menu-eyebrow">Menu</p>
+        <ul class="menu-list">
+          <li><a href="#capabilities">What it audits</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="demo/">Demo</a></li>
+        </ul>
+      </div>
     </nav>
-    <a class="pill pill-nav" href="demo/"><span>See the demo</span></a>
-    <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><i></i><i></i></button>
-  </header>
 
-  <nav class="menu" id="menu" aria-hidden="true">
-    <div class="menu-inner">
-      <p class="menu-eyebrow">Menu</p>
-      <ul class="menu-list">
-        <li><a href="demo/">Demo</a></li>
-        <li><a href="#capabilities">What it audits</a></li>
-      </ul>
+    <main class="hero fadeout">
+      <h1 class="headline"><span>Nothing ships</span> <span><em>unseen.</em></span></h1>
+      <p class="sub">
+        <span>AI-powered QA and security audits on your own machine.</span>
+        <span>Every page, every API, before your users find a bug.</span>
+      </p>
+      <div class="actions">
+        <a class="pill pill-cta" href="demo/"><span>See the demo</span></a>
+        <span class="ghost">Coming soon</span>
+      </div>
+    </main>
+
+    <div class="logos fadeout" aria-label="What MITHRA audits">
+      <a class="lg" href="#capabilities"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></svg>Security scans</a>
+      <a class="lg" href="#capabilities"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h13"/><circle cx="19" cy="15" r="3"/></svg>AI test cases</a>
+      <a class="lg" href="#capabilities"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-6 4 4 7-9"/><path d="M15 6h4v4"/></svg>Load &amp; fuzz testing</a>
+      <a class="lg" href="#onprem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Runs on-prem</a>
     </div>
-  </nav>
-
-  <main class="hero">
-    <h1 class="headline"><span>Nothing ships</span> <span><em>unseen.</em></span></h1>
-    <p class="sub">
-      <span>AI-powered QA and security audits on your own machine.</span>
-      <span>Every page, every API, before your users find a bug.</span>
-    </p>
-    <div class="actions">
-      <a class="pill pill-cta" href="demo/"><span>See the demo</span></a>
-      <span class="ghost">Coming soon</span>
-    </div>
-  </main>
-
-  <div class="logos" id="capabilities" aria-label="What MITHRA audits">
-    <div class="lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></svg>Security scans</div>
-    <div class="lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h13"/><circle cx="19" cy="15" r="3"/></svg>AI test cases</div>
-    <div class="lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-6 4 4 7-9"/><path d="M15 6h4v4"/></svg>Load &amp; fuzz testing</div>
-    <div class="lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Runs on-prem</div>
+    <div class="cue fadeout" aria-hidden="true"><i></i>Scroll to enter</div>
   </div>
 </div>
+
+<section class="light" id="inside">
+  <div class="wrap">
+    <p class="eyebrow rv">Inside MITHRA</p>
+    <h2 class="big rv" style="--d:.08s">Every release has doors you <span class="gold">never checked.</span></h2>
+    <p class="lede rv" style="--d:.16s">MITHRA walks through all of them. It attacks, clicks, fuzzes and load-tests your product the way a hacker, a tester and a real user would, then tells you exactly what broke.</p>
+  </div>
+</section>
+
+<section class="block" id="capabilities">
+  <div class="wrap">
+    <p class="eyebrow rv">What it audits</p>
+    <h2 class="h2 rv" style="--d:.08s">Six ways in. One report.</h2>
+    <div class="grid">
+      <article class="cap rv" style="--d:.0s"><span class="n">01</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        <h3>Security scans</h3><p>Finds vulnerabilities across your pages and maps them by severity, so you know what to fix first.</p></article>
+      <article class="cap rv" style="--d:.08s"><span class="n">02</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        <h3>API authorization</h3><p>Checks whether one user can reach another user's data, the bug scanners most often miss.</p></article>
+      <article class="cap rv" style="--d:.16s"><span class="n">03</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+        <h3>Logged-in scans</h3><p>Signs in like a real user and audits everything behind the login, not just the public front door.</p></article>
+      <article class="cap rv" style="--d:.0s"><span class="n">04</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>
+        <h3>Browser testing</h3><p>Drives a real browser through your flows: clicks, forms, navigation, and what breaks along the way.</p></article>
+      <article class="cap rv" style="--d:.08s"><span class="n">05</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17l5-6 4 4 7-9"/><path d="M15 6h4v4"/></svg>
+        <h3>Fuzz &amp; load testing</h3><p>Throws malformed input at every field and real traffic at every endpoint to see what gives first.</p></article>
+      <article class="cap rv" style="--d:.16s"><span class="n">06</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h10M4 18h13"/><circle cx="19" cy="15" r="3"/></svg>
+        <h3>AI test cases</h3><p>Reads your app and source files and writes the test cases for you, ready to run and export as a report.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="how">
+  <div class="wrap">
+    <p class="eyebrow rv">How it works</p>
+    <h2 class="h2 rv" style="--d:.08s">Point. Audit. Fix.</h2>
+    <div class="steps" id="steps">
+      <span class="bar" aria-hidden="true"></span>
+      <div class="step rv"><b>01</b><h3>Point it at your app</h3><p>A URL, a login, or your source files. That's the whole setup.</p></div>
+      <div class="step rv" style="--d:.1s"><b>02</b><h3>MITHRA goes through every door</h3><p>Scans, attacks, fuzzes, load-tests and clicks through your product, all at once.</p></div>
+      <div class="step rv" style="--d:.2s"><b>03</b><h3>Get the report</h3><p>Every finding ranked by severity, with what broke and where, ready to hand to your team.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block statement" id="onprem">
+  <div class="wrap">
+    <p class="eyebrow rv">Runs on-prem</p>
+    <p id="words" style="margin-top:26px">Your code never leaves your machine. MITHRA runs as a desktop app on your own computer, with a local AI model if you want one.</p>
+  </div>
+</section>
+
+<section class="final" id="final">
+  <div class="door" aria-hidden="true"></div>
+  <div class="inner">
+    <h2 class="rv">Nothing ships <span class="gold">unseen.</span></h2>
+    <div class="actions2 rv" style="--d:.1s">
+      <a class="pill" href="demo/">See the demo</a><span class="ghost2">Coming soon</span>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap"><span>© 2026 MITHRA</span><span>mithraqa.com</span></div></footer>
+
 <script>
 (() => {
-  const stage = document.getElementById("stage"), burger = document.getElementById("burger"), menu = document.getElementById("menu");
-  const set = open => {
+  const root = document.documentElement, stage = document.getElementById("stage"), intro = document.getElementById("intro");
+  const burger = document.getElementById("burger"), menu = document.getElementById("menu");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // mobile menu
+  const setMenu = open => {
     stage.classList.toggle("is-open", open);
     burger.setAttribute("aria-expanded", open); menu.setAttribute("aria-hidden", !open);
     burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
   };
-  burger.addEventListener("click", () => set(!stage.classList.contains("is-open")));
-  menu.addEventListener("click", e => { if (e.target.closest("a")) set(false); });
-  addEventListener("keydown", e => { if (e.key === "Escape") set(false); });
-  addEventListener("resize", () => { if (innerWidth / innerHeight > 1.1) set(false); });
+  burger.addEventListener("click", () => setMenu(!stage.classList.contains("is-open")));
+  menu.addEventListener("click", e => { if (e.target.closest("a")) setMenu(false); });
+  addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
+
+  // reveal blocks as they enter the viewport
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .18, rootMargin: "0px 0px -6% 0px" });
+  document.querySelectorAll(".rv").forEach(el => io.observe(el));
+
+  // split the on-prem statement into words for the scroll-scrubbed highlight
+  const words = document.getElementById("words");
+  words.innerHTML = words.textContent.trim().split(/\s+/).map(w => `<span class="w">${w}</span>`).join(" ");
+  const ws = [...words.querySelectorAll(".w")];
+
+  if (reduce) return;
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const ss = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+  const steps = document.getElementById("steps"), finalS = document.getElementById("final"), vid = document.getElementById("vid");
+  let ticking = false;
+  function update() {
+    ticking = false;
+    const vh = innerHeight;
+    // 1) the intro: camera pushes through the door, UI fades, light floods the screen
+    const r = intro.getBoundingClientRect();
+    const p = clamp(-r.top / Math.max(1, r.height - vh));
+    const push = ss(0, 1, p);
+    stage.style.setProperty("--zoom", (1 + push * push * 7).toFixed(4));
+    stage.style.setProperty("--ui", (1 - ss(0, .28, p)).toFixed(3));
+    stage.style.setProperty("--lift", (ss(0, .3, p) * 60).toFixed(1));
+    stage.style.setProperty("--fades", (1 - ss(.1, .5, p)).toFixed(3));
+    stage.style.setProperty("--flash", ss(.6, .92, p).toFixed(3));
+    if (p >= 1 && !vid.paused) vid.pause(); else if (p < 1 && vid.paused) vid.play().catch(() => {});
+    // 2) the how-it-works line draws as you scroll past it
+    const s = steps.getBoundingClientRect();
+    steps.style.setProperty("--draw", ss(vh * .85, vh * .35, s.top).toFixed(3));
+    // 3) the on-prem statement lights up word by word
+    const w = words.getBoundingClientRect();
+    const wp = clamp((vh * .8 - w.top) / (w.height + vh * .35));
+    const lit = Math.round(wp * ws.length);
+    ws.forEach((el, i) => el.classList.toggle("on", i < lit));
+    // 4) the final door opens as it scrolls into view
+    const f = finalS.getBoundingClientRect();
+    const fp = ss(vh, vh * .1, f.top);
+    finalS.style.setProperty("--open", (.15 + fp * .85).toFixed(3));
+    finalS.style.setProperty("--doorA", (.25 + fp * .75).toFixed(3));
+  }
+  const req = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+  addEventListener("scroll", req, { passive: true });
+  addEventListener("resize", () => { if (innerWidth / innerHeight > 1.1) setMenu(false); req(); });
+  update();
 })();
 </script>
 </body>
